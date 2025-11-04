@@ -12,9 +12,9 @@ function App() {
 
   return (
     <>
-    <AdminPanel/>
-      <CheckBalance/>
-      <RegisterMember/>
+      <AdminPanel />
+      <CheckBalance />
+      <RegisterMember />
       <div className="anton">
         <h1 className='kemon'>AMIN</h1>
       </div>
