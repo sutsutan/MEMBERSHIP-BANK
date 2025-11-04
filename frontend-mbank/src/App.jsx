@@ -5,6 +5,7 @@ import './App.css'
 import AdminPanel from './pages/AdminPanel'
 import CheckBalance from './pages/CheckBalance'
 import RegisterMember from './pages/RegisterMember'
+import UserList from './pages/UserList'
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
       <div className="anton">
         <h1 className='kemon'>AMIN</h1>
       </div>
+      <UserList/>
     </>
   )
 }
