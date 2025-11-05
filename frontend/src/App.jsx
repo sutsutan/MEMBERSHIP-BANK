@@ -17,9 +17,7 @@ function App() {
       <CheckBalance />
       <RegisterMember />
       <UserList/>
-      <div className="test">
-        
-      </div>
+      <div className=""></div>
     </>
   )
 }
