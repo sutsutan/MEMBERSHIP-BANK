@@ -2,6 +2,7 @@
 import { Outlet, NavLink } from "react-router-dom";
 
 export default function Layout() {
+<<<<<<< HEAD
   return (
     <div className="flex min-h-screen bg-gray-100">
       {/* Sidebar */}
@@ -51,4 +52,7 @@ export default function Layout() {
       </div>
     </div>
   );
+=======
+  
+>>>>>>> c9708a63df8eed5c996e22927f992e291d13ed4a
 }
