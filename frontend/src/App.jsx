@@ -6,6 +6,7 @@ import AdminPanel from './pages/AdminPanel'
 import CheckBalance from './pages/CheckBalance'
 import RegisterMember from './pages/RegisterMember'
 import UserList from './pages/UserList'
+import Layout from './components/Layout'
 
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
       <CheckBalance />
       <RegisterMember />
       <UserList/>
+      <Layout/>
       <div className=""></div>
     </>
   )
