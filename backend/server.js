@@ -154,7 +154,6 @@ app.get('/api/transaksi/riwayat', async (req, res) => {
         
         if (error) throw error;
 
-        // Memformat data agar lebih mudah digunakan di frontend
         const formattedData = data.map(trx => ({
             waktu_transaksi: trx.waktu_transaksi,
             jenis_transaksi: trx.jenis_transaksi,
@@ -174,20 +173,17 @@ app.get('/api/transaksi/riwayat', async (req, res) => {
 // Ambil Statistik Akun untuk Dashboard (LEBIH EFISIEN)
 app.get('/api/statistics', async (req, res) => {
     try {
-        // Cukup ambil data dari View yang sudah melakukan semua perhitungan
         const { data, error } = await supabase
-            .from('dashboard_statistics') // Mengambil data dari VIEW
+            .from('dashboard_statistics')
             .select('*')
-            .single(); // Karena View hanya mengembalikan satu baris data
+            .single();
 
         if (error) throw error;
         
-        // Data yang dikembalikan sudah berupa statistik yang diagregasi
         res.json({
             total_balance: data.total_balance,
             total_transactions: data.total_transactions,
             active_members: data.active_members,
-            // Menggunakan data transaksi sebagai placeholder untuk 'pending trans'
             pending_trans: data.total_transactions 
         });
 
