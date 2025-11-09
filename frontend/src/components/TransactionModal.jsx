@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Loader } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// --- PENTING: Perbaiki Base URL ke port 5000 ---
+const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function TransactionModal({ show, transactionType, onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
@@ -15,30 +16,43 @@ export default function TransactionModal({ show, transactionType, onClose, onSuc
       alert('Semua field harus diisi!');
       return;
     }
+    const amountValue = parseInt(formData.amount);
+    if (amountValue <= 0 || isNaN(amountValue)) {
+        alert('Jumlah harus angka positif!');
+        return;
+    }
 
     try {
       setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/transactions`, {
+      
+      // --- PERBAIKAN ENDPOINT DAN PAYLOAD ---
+      // Endpoint Backend: POST /api/transaction
+      // Payload Backend: { rfid_tag, jenis_transaksi, jumlah }
+      const response = await fetch(`${API_BASE_URL}/transaction`, { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rfid: formData.rfid,
-          amount: parseInt(formData.amount),
-          type: transactionType,
-          date: new Date().toISOString()
+          rfid_tag: formData.rfid,         // Sesuai field backend
+          jumlah: amountValue,             // Sesuai field backend
+          jenis_transaksi: transactionType.toUpperCase(), // 'DEPOSIT' atau 'WITHDRAW'
         })
       });
 
+      const result = await response.json(); 
+      
       if (response.ok) {
-        alert('Transaksi berhasil!');
+        // Asumsi backend mengembalikan { message, saldo_baru }
+        const formattedBalance = result.saldo_baru ? result.saldo_baru.toLocaleString('id-ID') : 'N/A';
+        alert(`Transaksi ${transactionType.toUpperCase()} berhasil!\nSaldo Baru: Rp ${formattedBalance}`);
         setFormData({ rfid: '', amount: '' });
         if (onSuccess) onSuccess();
         onClose();
       } else {
-        throw new Error('Failed');
+        // Tampilkan pesan error spesifik dari backend
+        throw new Error(result.message || 'Transaksi gagal diproses oleh server.');
       }
     } catch (err) {
-      alert('Transaksi gagal! Periksa koneksi backend.');
+      alert(`Transaksi gagal: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -50,7 +64,7 @@ export default function TransactionModal({ show, transactionType, onClose, onSuc
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl p-8 max-w-md w-full">
         <h3 className="text-2xl font-bold text-gray-800 mb-6">
-          {transactionType === 'deposit' ? 'Deposit Money' : 'Withdraw Money'}
+          {transactionType.toUpperCase()} Money
         </h3>
         <div className="space-y-4">
           <div>

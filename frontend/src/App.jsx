@@ -1,99 +1,107 @@
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
-import AdminPanel from './pages/AdminPanel';
+// AdminPanel adalah Dashboard kita
+import AdminPanel from './pages/AdminPanel'; 
 import CheckBalance from './pages/CheckBalance';
 import RegisterMember from './pages/RegisterMember';
 import UserList from './pages/UserList';
-import TransactionModal from './components/TransactionModal';
+import TransactionModal from './components/TransactionModal'; 
 
-const API_BASE_URL = 'http://localhost:3000/api';
+// --- PENTING: Perbaiki Base URL agar sesuai dengan server Express.js (Port 5000) ---
+const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [showTransactionModal, setShowTransactionModal] = useState(false);
-  const [transactionType, setTransactionType] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [transactions, setTransactions] = useState([]);
-  const [members, setMembers] = useState([]);
+    const [activeTab, setActiveTab] = useState('dashboard');
+    const [showTransactionModal, setShowTransactionModal] = useState(false);
+    const [transactionType, setTransactionType] = useState('');
+    
+    // Loading global digunakan untuk halaman yang menggunakan data global (Transactions & Members)
+    const [loading, setLoading] = useState(false); 
+    const [transactions, setTransactions] = useState([]);
+    const [members, setMembers] = useState([]);
 
-  const fetchTransactions = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${API_BASE_URL}/transactions`);
-      if (!response.ok) throw new Error('Failed');
-      const data = await response.json();
-      setTransactions(data);
-    } catch (err) {
-      setTransactions([
-        { id: 1, type: 'deposit', rfid: '12345678901234', amount: 500000, date: '2024-11-06 10:30', member: 'Iman Imin' },
-        { id: 2, type: 'withdraw', rfid: '98765432109876', amount: 200000, date: '2024-11-06 09:15', member: 'Papoy Pipoy' }
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Fungsi untuk mengambil SEMUA riwayat transaksi (untuk halaman Transactions)
+    const fetchTransactions = async () => {
+        try {
+            setLoading(true);
+            // API Backend: GET /api/transaksi/riwayat
+            const response = await fetch(`${API_BASE_URL}/transaksi/riwayat`);
+            if (!response.ok) throw new Error('Gagal mengambil riwayat transaksi.');
+            const data = await response.json();
+            // Data yang diterima: array of { id, jenis_transaksi, jumlah, nama, rfid_tag, waktu_transaksi }
+            setTransactions(data); 
+        } catch (err) {
+            console.error('Error fetching all transactions:', err.message);
+            setTransactions([]); 
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const fetchMembers = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/members`);
-      if (!response.ok) throw new Error('Failed');
-      const data = await response.json();
-      setMembers(data);
-    } catch (err) {
-      setMembers([
-        { id: 1, name: 'Iman Imin', rfid: '12345678901234', balance: 5000000 },
-        { id: 2, name: 'Papoy Pipuy', rfid: '98765432109876', balance: 3000000 }
-      ]);
-    }
-  };
+    // Fungsi untuk mengambil SEMUA daftar anggota (untuk halaman Members)
+    const fetchMembers = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/anggota`);
+            if (!response.ok) throw new Error('Gagal mengambil daftar anggota.');
+            const data = await response.json();
+            // Data yang diterima: array of { id, nama, rfid_tag, saldo, tanggal_lahir }
+            setMembers(data); 
+        } catch (err) {
+            console.error('Error fetching all members:', err.message);
+            setMembers([]);
+        }
+    };
 
-  useEffect(() => {
-    fetchTransactions();
-    fetchMembers();
-  }, []);
+    useEffect(() => {
+        fetchTransactions();
+        fetchMembers();
+    }, []);
 
-  const handleTransactionClick = (type) => {
-    setTransactionType(type);
-    setShowTransactionModal(true);
-  };
+    const handleTransactionClick = (type) => {
+        setTransactionType(type);
+        setShowTransactionModal(true);
+    };
 
-  const handleTransactionSuccess = () => {
-    fetchTransactions();
-    fetchMembers();
-  };
+    // PENTING: Refresh data setelah transaksi atau registrasi berhasil
+    const handleTransactionSuccess = () => {
+        fetchTransactions();
+        fetchMembers();
+    };
 
-  const handleRegisterSuccess = () => {
-    fetchMembers();
-  };
+    const handleRegisterSuccess = () => {
+        fetchMembers();
+        setActiveTab('members');
+    };
 
-  return (
-    <>
-      <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
-        {activeTab === 'dashboard' && (
-          <AdminPanel 
-            transactions={transactions} 
-            members={members}
-            setActiveTab={setActiveTab}
-            onTransactionClick={handleTransactionClick}
-          />
-        )}
-        {activeTab === 'transactions' && (
-          <CheckBalance transactions={transactions} />
-        )}
-        {activeTab === 'members' && (
-          <UserList members={members} loading={loading} />
-        )}
-        {activeTab === 'register' && (
-          <RegisterMember onRegisterSuccess={handleRegisterSuccess} />
-        )}
-      </Layout>
+    // --- RENDER ---
+    return (
+        <>
+            <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+                {/* AdminPanel (Dashboard) tidak lagi menerima props members/transactions, karena ia fetch sendiri data statistik */}
+                {activeTab === 'dashboard' && (
+                    <AdminPanel 
+                        onTransactionClick={handleTransactionClick}
+                    />
+                )}
+                {/* CheckBalance (Riwayat Transaksi) menerima data transactions global */}
+                {activeTab === 'transactions' && (
+                    <CheckBalance transactions={transactions} loading={loading} />
+                )}
+                {/* UserList (Anggota) menerima data members global */}
+                {activeTab === 'members' && (
+                    <UserList members={members} loading={loading} />
+                )}
+                {activeTab === 'register' && (
+                    <RegisterMember onRegisterSuccess={handleRegisterSuccess} />
+                )}
+            </Layout>
 
-      <TransactionModal 
-        show={showTransactionModal}
-        transactionType={transactionType}
-        onClose={() => setShowTransactionModal(false)}
-        onSuccess={handleTransactionSuccess}
-      />
-    </>
-  );
+            <TransactionModal 
+                show={showTransactionModal}
+                transactionType={transactionType}
+                onClose={() => setShowTransactionModal(false)}
+                onSuccess={handleTransactionSuccess}
+            />
+        </>
+    );
 }
