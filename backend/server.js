@@ -12,7 +12,7 @@ app.use(express.json());
 // --- ROUTES ---
 
 app.get('/', (req, res) => {
-    res.send('Metsoo Bank API is running! Use endpoints like /api/user/:rfidTag');
+    res.send('Metschoo Bank API is running! Use endpoints like /api/user/:rfidTag');
 });
 
 // Cek Saldo dan Riwayat (READ)
