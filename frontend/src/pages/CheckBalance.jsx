@@ -8,7 +8,6 @@ const formatRupiah = (number) => {
     }).format(number);
 };
 
-// Fungsi Bantuan untuk Format Tanggal/Waktu
 const formatDate = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -18,7 +17,6 @@ const formatDate = (isoString) => {
 
 
 export default function CheckBalance({ transactions }) {
-    // Diasumsikan `transactions` di-fetch dari App.jsx menggunakan GET /api/transaksi/riwayat
     if (!transactions || transactions.length === 0) {
         return <div className="p-6 text-center text-gray-500">Tidak ada riwayat transaksi.</div>;
     }
@@ -37,7 +35,6 @@ export default function CheckBalance({ transactions }) {
                     </thead>
                     <tbody>
                         {transactions.map(tx => {
-                            // PENTING: Menyesuaikan dengan format API backend (jenis_transaksi, jumlah, nama, rfid_tag, waktu_transaksi)
                             const isDeposit = tx.jenis_transaksi === 'DEPOSIT';
                             
                             return (

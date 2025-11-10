@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Loader } from 'lucide-react';
 
-// --- PENTING: Gunakan Port 8080 untuk Backend Supabase Anda ---
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function RegisterMember({ onRegisterSuccess }) {
@@ -10,7 +9,7 @@ export default function RegisterMember({ onRegisterSuccess }) {
         name: '',
         dob: '',
         rfid: '',
-        deposit: '' // <-- KEY STATE YANG DIGUNAKAN
+        deposit: ''
     });
 
     const handleRegister = async () => {
@@ -19,7 +18,6 @@ export default function RegisterMember({ onRegisterSuccess }) {
             return;
         }
 
-        // Ambil nilai dari state 'deposit'
         const initialDepositValue = parseInt(formData.deposit); 
         
         if (initialDepositValue < 0 || isNaN(initialDepositValue)) {
@@ -30,7 +28,6 @@ export default function RegisterMember({ onRegisterSuccess }) {
         try {
             setLoading(true);
             
-            // --- ENDPOINT SESUAI BACKEND SUPABASE: /api/register/member ---
             const response = await fetch(`${API_BASE_URL}/register/member`, { 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -38,7 +35,6 @@ export default function RegisterMember({ onRegisterSuccess }) {
                     nama: formData.name,
                     tanggal_lahir: formData.dob,
                     rfid_tag: formData.rfid,
-                    // --- PAYLOAD SINKRONISASI: Mengirim 'deposit' sebagai 'initial_deposit' ---
                     initial_deposit: initialDepositValue 
                 })
             });
@@ -47,11 +43,9 @@ export default function RegisterMember({ onRegisterSuccess }) {
             
             if (response.ok) {
                 alert(`Member ${formData.name} berhasil didaftarkan!`);
-                // Reset form
                 setFormData({ name: '', dob: '', rfid: '', deposit: '' }); 
-                if (onRegisterSuccess) onRegisterSuccess(); // Refresh data di App.jsx
+                if (onRegisterSuccess) onRegisterSuccess();
             } else {
-                // Tampilkan pesan error spesifik dari backend
                 throw new Error(result.message || 'Pendaftaran gagal diproses oleh server.');
             }
         } catch (err) {

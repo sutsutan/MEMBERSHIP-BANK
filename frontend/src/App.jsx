@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import AdminPanel from './pages/AdminPanel'; 
-import CheckBalance from './pages/CheckBalance'; // Halaman Transaksi
+import CheckBalance from './pages/CheckBalance';
 import RegisterMember from './pages/RegisterMember';
 import UserList from './pages/UserList';
 import TransactionModal from './components/TransactionModal'; 
 
-// --- PENTING: Gunakan Port 8080 untuk Backend Supabase Anda ---
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function App() {
@@ -57,7 +56,6 @@ export default function App() {
         setShowTransactionModal(true);
     };
 
-    // --- REFRESH DATA SETELAH BERHASIL ---
     const handleTransactionSuccess = () => {
         fetchTransactions();
         fetchMembers();
@@ -67,7 +65,6 @@ export default function App() {
         fetchMembers();
         setActiveTab('members');
     };
-    // ------------------------------------
 
     return (
         <>

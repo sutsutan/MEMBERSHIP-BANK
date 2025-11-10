@@ -1,7 +1,6 @@
 import React from 'react';
 import { Loader, CreditCard, Users } from 'lucide-react';
 
-// Fungsi Bantuan untuk Format Rupiah
 const formatRupiah = (number) => {
     if (number === undefined || number === null) return '0';
     return new Intl.NumberFormat('id-ID', {
@@ -32,7 +31,6 @@ export default function UserList({ members, loading }) {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {members.map(member => (
-                        // Data yang diterima dari API Supabase: { nama, rfid_tag, saldo }
                         <div key={member.rfid_tag} className="bg-white rounded-2xl p-6 shadow-sm">
                             <div className="flex items-center space-x-4 mb-4">
                                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold">
