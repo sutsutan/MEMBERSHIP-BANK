@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, Copy, Check, DollarSign, History, TrendingUp, Users, ArrowDownLeft, ArrowUpRight, RefreshCw } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8080/api'; // Menggunakan port 5000
+const API_BASE_URL = 'http://localhost:8080/api';
 
-// Fungsi Bantuan untuk Format Rupiah
 const formatRupiah = (number) => {
     if (number === undefined || number === null) return '0';
     return new Intl.NumberFormat('id-ID', {
@@ -11,7 +10,6 @@ const formatRupiah = (number) => {
     }).format(number);
 };
 
-// Fungsi Bantuan untuk Format Tanggal/Waktu
 const formatTime = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -20,7 +18,7 @@ const formatTime = (isoString) => {
 };
 
 
-export default function AdminPanel({ setActiveTab, onTransactionClick }) {
+export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKey }) {
     const [stats, setStats] = useState(null);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,16 +30,15 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
     // Fetch data statistik dan 5 transaksi terbaru
     useEffect(() => {
         const fetchData = async () => {
+            
             setLoading(true);
             setError(null);
             try {
-                // 1. Fetch Account Statistics
                 const statsResponse = await fetch(`${API_BASE_URL}/statistics`);
                 const statsData = await statsResponse.json();
                 if (!statsResponse.ok) throw new Error(statsData.message || 'Gagal ambil statistik.');
                 setStats(statsData);
 
-                // 2. Fetch Recent Transactions (Limit 5)
                 const transResponse = await fetch(`${API_BASE_URL}/transaksi/riwayat?limit=5`);
                 const transData = await transResponse.json();
                 if (!transResponse.ok) throw new Error(transData.message || 'Gagal ambil transaksi terbaru.');
@@ -56,7 +53,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
         };
 
         fetchData();
-    }, []); // Efek dijalankan sekali saat mount
+    }, [refreshKey]);
 
     // Hardcoded user info
     const currentUser = {
@@ -80,13 +77,11 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
         </div>;
     }
 
-    // Menggunakan data dari state (API)
     const statsDisplay = {
-        totalBalance: stats.total_balance,
-        // Asumsi 'Pending Trans.' menggunakan total_transactions dari view
-        pendingTransactions: stats.total_transactions, 
-        transactionValue: stats.total_transactions, // Gunakan total_transactions sebagai placeholder
-        activeMember: stats.active_members
+        totalBalance: stats.total_balance ?? 0,
+        pendingTransactions: stats.pending_trans ?? stats.total_transactions ?? 0,
+        transactionValue: stats.total_transactions ?? 0,
+        activeMember: stats.active_members ?? 0
     };
 
     const handleCopy = () => {
@@ -118,7 +113,6 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
                     <div className="mb-6">
                         <p className="text-sm opacity-90 mb-1">Available Balance</p>
                         <p className="text-4xl font-bold">
-                            {/* Menggunakan data API total_balance */}
                             {showBalance ? `${formatRupiah(statsDisplay.totalBalance)} ${currentUser.currency}` : '••••••••'}
                         </p>
                     </div>
@@ -158,7 +152,6 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
                 </div>
             </div>
 
-            {/* Quick Actions (TIDAK BERUBAH) */}
             <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
                 <h3 className="font-semibold text-gray-800 mb-4">What would you like to do today?</h3>
                 <p className="text-sm text-gray-500 mb-4">Choose from our popular actions below</p>
@@ -179,7 +172,6 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
                 </div>
             </div>
 
-            {/* Recent Transactions (Menggunakan data API) */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-4">Recent Transactions</h3>
                 <div className="space-y-3">
@@ -187,7 +179,6 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
                         <p className="text-center text-gray-500">Tidak ada transaksi terbaru.</p>
                     ) : (
                         recentTransactions.map(tx => {
-                            // PENTING: Menyesuaikan dengan format API backend (jenis_transaksi, jumlah, nama, rfid_tag, waktu_transaksi)
                             const isDeposit = tx.jenis_transaksi === 'DEPOSIT';
                             
                             return (
@@ -202,15 +193,15 @@ export default function AdminPanel({ setActiveTab, onTransactionClick }) {
                                             }
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-800">{tx.nama || 'Anggota Tidak Dikenal'}</p> {/* Menggunakan tx.nama */}
-                                            <p className="text-xs text-gray-500">RFID: {tx.rfid_tag}</p> {/* Menggunakan tx.rfid_tag */}
+                                            <p className="font-medium text-gray-800">{tx.nama || 'Anggota Tidak Dikenal'}</p>
+                                            <p className="text-xs text-gray-500">RFID: {tx.rfid_tag}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <p className={`font-semibold ${isDeposit ? 'text-green-600' : 'text-red-600'}`}>
-                                            {isDeposit ? '+' : '-'} Rp {formatRupiah(tx.jumlah)} {/* Menggunakan tx.jumlah */}
+                                            {isDeposit ? '+' : '-'} Rp {formatRupiah(tx.jumlah)}
                                         </p>
-                                        <p className="text-xs text-gray-500">{formatTime(tx.waktu_transaksi)}</p> {/* Menggunakan tx.waktu_transaksi */}
+                                        <p className="text-xs text-gray-500">{formatTime(tx.waktu_transaksi)}</p>
                                     </div>
                                 </div>
                             );
