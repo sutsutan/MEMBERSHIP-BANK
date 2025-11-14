@@ -44,13 +44,13 @@ const CustomTooltip = ({ active, payload }) => {
 const getDummyChartData = (period) => {
     if (period === 'weekly') {
         return [
-            { name: 'Sen', deposit: 4500000, withdraw: 3200000 },
-            { name: 'Sel', deposit: 5200000, withdraw: 4100000 },
-            { name: 'Rab', deposit: 3800000, withdraw: 2900000 },
-            { name: 'Kam', deposit: 6100000, withdraw: 4500000 },
-            { name: 'Jum', deposit: 7200000, withdraw: 5300000 },
-            { name: 'Sab', deposit: 5800000, withdraw: 3800000 },
-            { name: 'Min', deposit: 4200000, withdraw: 2800000 }
+            { name: '10 Nov 2025', deposit: 4500000, withdraw: 3200000 },
+            { name: '11 Nov 2025', deposit: 5200000, withdraw: 4100000 },
+            { name: '12 Nov 2025', deposit: 3800000, withdraw: 2900000 },
+            { name: '13 Nov 2025', deposit: 6100000, withdraw: 4500000 },
+            { name: '14 Nov 2025', deposit: 7200000, withdraw: 5300000 },
+            { name: '15 Nov 2025', deposit: 5800000, withdraw: 3800000 },
+            { name: '16 Nov', deposit: 4200000, withdraw: 2800000 }
         ];
     } else {
         return [
