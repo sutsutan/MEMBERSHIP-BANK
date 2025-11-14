@@ -1,223 +1,96 @@
-require('dotenv').config(); 
-
-const supabase = require('./db/index');
 const express = require('express');
-const cors = require('cors');
+const http = require('http');
+const WebSocket = require('ws');
+
+// Digunakan saat Deployment di Orange Pi (Harus di-uncomment nanti)
+// const { SerialPort } = require('serialport');
+// const { ReadlineParser } = require('@serialport/parser-readline'); 
+
+const supabase = require('./supabaseClient'); 
+
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocket.Server({ server });
+const PORT = 3000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
 
-// --- ROUTES ---
+let lastRfidTag = null; 
 
-app.get('/', (req, res) => {
-    res.send('Metschoo Bank API is running! Use endpoints like /api/user/:rfidTag');
-});
+/**
+ * @param {string} tagId
+ */
+async function logRfidTap(tagId) {
+    console.log(`[SUPABASE LOG] Mencatat tap untuk ID: ${tagId}`);
+    
+    // GANTI 'tap_log' DENGAN NAMA TABEL LOG ANDA JIKA BERBEDA
+    const { error } = await supabase
+        .from('tap_log') 
+        .insert({ 
+            rfid_tag: tagId, 
+            waktu_tap: new Date().toISOString() 
+        });
 
-// Cek Saldo dan Riwayat (READ)
-app.get('/api/anggota/:rfidTag', async (req, res) => {
-    const rfidTag = req.params.rfidTag;
+    if (error) {
+        console.error('[SUPABASE ERROR] Gagal mencatat tap:', error.message);
+    } 
+}
 
-    try {
-        const { data, error } = await supabase
-            .from('anggota')
-            .select(`
-                id,
-                nama, 
-                saldo, 
-                transaksi(waktu_transaksi, jenis_transaksi, jumlah)
-            `)
-            .eq('rfid_tag', rfidTag)
-            .limit(1);
 
-        if (error) throw error;
-        
-        if (!data || data.length === 0) {
-            return res.status(404).json({ message: 'Anggota tidak ditemukan.' });
+// A. LOGIKA MOCK RFID (Hanya untuk Pengujian Lokal di Laptop)
+// HAPUS ATAU COMMENT BAGIAN INI SAAT DEPLOYMENT KE ORANGE PI
+const MOCK_RFID_TAGS = ['12345678', '90123456', '88888888']; 
+let tagIndex = 0;
+
+setInterval(() => {
+    const mockTag = MOCK_RFID_TAGS[tagIndex];
+    
+    logRfidTap(mockTag);
+
+    lastRfidTag = mockTag;
+
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'RFID_READ', tagId: lastRfidTag }));
         }
-
-        // Response ke Frontend/Hardware
-        res.status(201).json({ 
-        message: 'Pendaftaran Berhasil.', 
-        member: data[0]
     });
-
-    } catch (error) {
-        console.error('Error saat cek saldo:', error.message);
-        res.status(500).json({ message: 'Gagal memproses permintaan.' });
-    }
-});
-
-
-// Pendaftaran Anggota Baru (CREATE)
-app.post('/api/register/member', async (req, res) => {
-    const { nama, tanggal_lahir, rfid_tag, initial_deposit } = req.body;
     
-    try {
-        const { data, error } = await supabase.rpc('register_new_member', {
-            p_nama: nama,
-            p_tanggal_lahir: tanggal_lahir,
-            p_rfid_tag: rfid_tag,
-            p_initial_deposit: initial_deposit || 0 // Default setoran 0
-        });
+    tagIndex = (tagIndex + 1) % MOCK_RFID_TAGS.length;
+}, 5000); 
 
-        if (error) throw error;
-        
-        res.status(201).json({ 
-            message: 'Pendaftaran dan Setoran Awal Berhasil.', 
-            member: data[0] 
-        });
 
-    } catch (error) {
-        if (error.code === '23505') {
-            return res.status(409).json({ message: 'RFID Tag sudah terdaftar.' });
+/* // B. LOGIKA SERIAL PORT RFID (UNCOMMENT DAN GANTI DENGAN KODE INI SAAT DI ORANGE PI)
+
+const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 }); 
+const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+parser.on('data', data => {
+    const rfidTag = data.trim();
+    console.log(`[RFID READ] Tag Diterima: ${rfidTag}`);
+
+    // 1. Catat ke Supabase
+    logRfidTap(rfidTag); 
+
+    // 2. Simpan Tag Terakhir
+    lastRfidTag = rfidTag;
+
+    // 3. Kirim ke Frontend (melalui WebSocket)
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({ type: 'RFID_READ', tagId: lastRfidTag }));
         }
-        console.error('Error saat pendaftaran:', error.message);
-        res.status(500).json({ message: 'Pendaftaran gagal.', detail: error.message });
-    }
+    });
+});
+*/
+
+
+
+app.use(express.static('build')); 
+
+wss.on('connection', function connection(ws) {
+    console.log('[WS] Frontend terhubung via WebSocket');
 });
 
-
-// Deposit atau Withdraw (UPDATE & CREATE)
-app.post('/api/transaction', async (req, res) => {
-    const { rfid_tag, jenis_transaksi, jumlah } = req.body;
-
-    if (!['DEPOSIT', 'WITHDRAW'].includes(jenis_transaksi)) {
-        return res.status(400).json({ message: 'jenis transaksi tidak valid.' });
-    }
-    if (jumlah <= 0) {
-        return res.status(400).json({ message: 'Jumlah transaksi harus positif.' });
-    }
-
-    try {
-        const { data: result, error } = await supabase.rpc('process_transaction', {
-            p_rfid_tag: rfid_tag,
-            p_jenis_transaksi: jenis_transaksi,
-            p_jumlah: jumlah
-        });
-
-        if (error) throw error;
-        
-        if (result.success === false) {
-            return res.status(400).json({ message: result.message });
-        }
-
-        res.status(200).json({ 
-            message: result.message, 
-            saldo_baru: result.saldo_baru
-        });
-
-    } catch (error) {
-        console.error('Error saat transaksi:', error.message);
-        res.status(500).json({ message: 'Transaksi gagal diproses.', detail: error.message });
-    }
+server.listen(PORT, () => {
+    console.log(`Server lokal berjalan di http://localhost:${PORT}`);
+    console.log('Pastikan frontend berjalan dan terhubung via WS.');
 });
-
-// Ambil Semua Daftar Anggota (READ ALL)
-app.get('/api/anggota', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('anggota')
-            .select('nama, rfid_tag, saldo')
-            .order('nama', { ascending: true });
-
-        if (error) throw error;
-        
-        res.json(data);
-
-    } catch (error) {
-        console.error('Error saat mengambil daftar anggota:', error.message);
-        res.status(500).json({ message: 'Gagal mengambil data anggota.' });
-    }
-});
-
-// Ambil Riwayat Transaksi Lengkap (READ ALL)
-app.get('/api/transaksi/riwayat', async (req, res) => {
-    // Ambil parameter query 'limit' jika ada (misal: /api/transaksi/riwayat?limit=5)
-    const limit = req.query.limit ? parseInt(req.query.limit) : null;
-    
-    try {
-        // Gabungkan tabel transaksi dan anggota
-        let query = supabase
-            .from('transaksi')
-            .select(`
-                waktu_transaksi, 
-                jenis_transaksi, 
-                jumlah, 
-                anggota!inner (nama, rfid_tag)
-            `)
-            .order('waktu_transaksi', { ascending: false }); // Urutkan dari yang terbaru
-
-        if (limit && limit > 0) {
-            query = query.limit(limit);
-        }
-
-        const { data, error } = await query;
-        
-        if (error) throw error;
-
-        const formattedData = data.map(trx => ({
-            waktu_transaksi: trx.waktu_transaksi,
-            jenis_transaksi: trx.jenis_transaksi,
-            jumlah: trx.jumlah,
-            nama: trx.anggota.nama,
-            rfid_tag: trx.anggota.rfid_tag,
-        }));
-        
-        res.json(formattedData);
-
-    } catch (error) {
-        console.error('Error saat mengambil riwayat transaksi:', error.message);
-        res.status(500).json({ message: 'Gagal mengambil riwayat transaksi.' });
-    }
-});
-
-// Ambil Statistik Akun untuk Dashboard (LEBIH EFISIEN)
-app.get('/api/statistics', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('dashboard_statistics')
-            .select('*')
-            .single();
-
-        if (error) throw error;
-        
-        res.json({
-            total_balance: data.total_balance,
-            total_transactions: data.total_transactions,
-            active_members: data.active_members,
-            pending_trans: data.total_transactions 
-        });
-
-    } catch (error) {
-        console.error('Error saat mengambil statistik dashboard (View):', error.message);
-        res.status(500).json({ message: 'Gagal mengambil data statistik.' });
-    }
-});
-
-app.get('/api/statistics/chart', async (req, res) => {
-    const { period } = req.query; 
-    
-    const rpc_name = period === 'monthly' 
-                     ? 'get_monthly_transactions' 
-                     : 'get_weekly_transactions'; 
-
-    try {
-        const { data, error } = await supabase.rpc(rpc_name); 
-
-        if (error) {
-            console.error(`Supabase RPC Error for ${rpc_name}:`, error);
-            return res.status(500).json({ message: error.message || 'Gagal mengambil data chart.' });
-        }
-
-        res.status(200).json(data);
-        
-    } catch (err) {
-        console.error("Server Error:", err);
-        res.status(500).json({ message: 'Internal Server Error.' });
-    }
-});
-
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));
