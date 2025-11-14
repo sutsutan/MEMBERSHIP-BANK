@@ -366,7 +366,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                                         </div>
                                         <div>
                                             <p className="font-medium text-gray-800">{tx.nama || 'Anggota Tidak Dikenal'}</p>
-                                            <p className="text-xs text-gray-500">RFID: {tx.rfid_tag}</p>
+                                            <p className="text-xs text-gray-500">Card Number: {tx.rfid_tag}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
