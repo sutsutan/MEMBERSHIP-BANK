@@ -2,16 +2,16 @@ require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; 
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-    throw new Error('Supabase credentials (URL/KEY) must be set in the .env file.');
+  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_KEY must be set in environment variables');
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: {
-        persistSession: false, 
-    },
+  auth: {
+    persistSession: false,
+  },
 });
 
 module.exports = supabase;
