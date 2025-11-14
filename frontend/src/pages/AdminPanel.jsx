@@ -183,7 +183,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
             isMounted = false;
         };
     }, [refreshKey, chartRefreshKey]);
-        
+
     const currentUser = {
         name: 'Admin dashboard',
         accountNumber: '7799021650880',
