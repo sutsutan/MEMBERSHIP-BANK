@@ -83,7 +83,7 @@ app.post('/api/register/member', async (req, res) => {
 app.post('/api/transaction', async (req, res) => {
     const { rfid_tag, jenis_transaksi, jumlah } = req.body;
 
-    if (!['DEPOSIT', 'WITHDRAW'].includes(jenis_transaksi)) {
+    if (!['DEPOSIT', 'WITHDRAW',].includes(jenis_transaksi)) {
         return res.status(400).json({ message: 'jenis transaksi tidak valid.' });
     }
     if (jumlah <= 0) {
@@ -219,5 +219,39 @@ app.get('/api/statistics/chart', async (req, res) => {
     }
 });
 
+// Transfer Antar Anggota (UPDATE & CREATE)
+app.post('/api/transaction', async (req, res) => {
+    const { rfid_tag, jenis_transaksi, jumlah } = req.body;
+
+    if (!['TRANSFER'].includes(jenis_transaksi)) {
+        return res.status(400).json({ message: 'jenis transaksi tidak valid.' });
+    }
+    if (jumlah <= 0) {
+        return res.status(400).json({ message: 'Jumlah transaksi harus positif.' });
+    }
+
+    try {
+        const { data: result, error } = await supabase.rpc('process_transaction', {
+            p_rfid_tag: rfid_tag,
+            p_jenis_transaksi: jenis_transaksi,
+            p_jumlah: jumlah
+        });
+
+        if (error) throw error;
+        
+        if (result.success === false) {
+            return res.status(400).json({ message: result.message });
+        }
+
+        res.status(200).json({ 
+            message: result.message, 
+            saldo_baru: result.saldo_baru
+        });
+
+    } catch (error) {
+        console.error('Error saat transaksi:', error.message);
+        res.status(500).json({ message: 'Transaksi gagal diproses.', detail: error.message });
+    }
+});
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));

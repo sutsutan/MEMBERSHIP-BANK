@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Copy, Check, DollarSign, History, TrendingUp, Users, ArrowDownLeft, ArrowUpRight, RefreshCw } from 'lucide-react';
+import { Eye, EyeOff, Copy, Check, DollarSign, History, TrendingUp, Users, ArrowDownLeft, ArrowUpRight, RefreshCw, Send, Gamepad2, CardSim, SmartphoneCharging } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { createClient } from '@supabase/supabase-js';
 
@@ -373,7 +373,11 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                         { label: 'Deposit', icon: ArrowDownLeft, bgColor: 'bg-green-100', textColor: 'text-green-600', action: () => onTransactionClick('deposit') },
                         { label: 'Withdraw', icon: ArrowUpRight, bgColor: 'bg-red-100', textColor: 'text-red-600', action: () => onTransactionClick('withdraw') },
                         { label: 'History', icon: History, bgColor: 'bg-purple-100', textColor: 'text-purple-600', action: () => setActiveTab('transactions') },
-                        { label: 'Members', icon: Users, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => setActiveTab('members') }
+                        { label: 'Members', icon: Users, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => setActiveTab('members') },
+                        { label: 'Top up', icon: Gamepad2, bgColor: 'bg-blue-100', textColor: 'text-grey-600', action: () => setActiveTab('') },
+                        { label: 'Transfer', icon: Send, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => onTransactionClick('transfer') },
+                        { label: 'Buy credit', icon: CardSim, bgColor: 'bg-pink-100', textColor: 'text-pink-600', action: () => setActiveTab('') },
+                        { label: 'Data package', icon:SmartphoneCharging, bgColor: 'bg-yellow-100', textColor: 'text-yellow-600', action: () => setActiveTab('') }
                     ].map((btn, i) => (
                         <button key={i} onClick={btn.action} className="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition">
                             <div className={`w-12 h-12 ${btn.bgColor} rounded-xl flex items-center justify-center mb-3`}>
