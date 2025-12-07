@@ -233,7 +233,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
     return (
         <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2 bg-gradient-to-br from-blue-900 to-blue-500 rounded-2xl p-6 text-white shadow-lg">
+                <div className="lg:col-span-2 bg-linear-to-br from-blue-900 to-blue-500 rounded-2xl p-6 text-white shadow-lg">
                     <div className="flex justify-between items-start mb-6">
                         <div className="flex items-center space-x-3">
                             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
