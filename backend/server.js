@@ -54,7 +54,7 @@ app.post('/api/register/member', async (req, res) => {
             p_nama: nama,
             p_tanggal_lahir: tanggal_lahir,
             p_rfid_tag: rfid_tag,
-            p_initial_deposit: initial_deposit || 0 // Default setoran 0
+            p_initial_deposit: initial_deposit || 0
         });
 
         if (error) throw error;
@@ -74,7 +74,6 @@ app.post('/api/register/member', async (req, res) => {
 });
 
 
-// Deposit atau Withdraw (UPDATE & CREATE)
 app.post('/api/transaction', async (req, res) => {
     const { rfid_tag, jenis_transaksi, jumlah } = req.body;
 
@@ -109,7 +108,6 @@ app.post('/api/transaction', async (req, res) => {
     }
 });
 
-// Ambil Semua Daftar Anggota (READ ALL)
 app.get('/api/anggota', async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -127,13 +125,10 @@ app.get('/api/anggota', async (req, res) => {
     }
 });
 
-// Ambil Riwayat Transaksi Lengkap (READ ALL)
 app.get('/api/transaksi/riwayat', async (req, res) => {
-    // Ambil parameter query 'limit' jika ada (misal: /api/transaksi/riwayat?limit=5)
     const limit = req.query.limit ? parseInt(req.query.limit) : null;
     
     try {
-        // Gabungkan tabel transaksi dan anggota
         let query = supabase
             .from('transaksi')
             .select(`
@@ -142,7 +137,7 @@ app.get('/api/transaksi/riwayat', async (req, res) => {
                 jumlah, 
                 anggota!inner (nama, rfid_tag)
             `)
-            .order('waktu_transaksi', { ascending: false }); // Urutkan dari yang terbaru
+            .order('waktu_transaksi', { ascending: false });
 
         if (limit && limit > 0) {
             query = query.limit(limit);
@@ -168,7 +163,6 @@ app.get('/api/transaksi/riwayat', async (req, res) => {
     }
 });
 
-// Ambil Statistik Akun untuk Dashboard (LEBIH EFISIEN)
 app.get('/api/statistics', async (req, res) => {
     try {
         const { data, error } = await supabase
