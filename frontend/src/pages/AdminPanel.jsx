@@ -124,7 +124,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                 const response = await fetch(`${API_BASE_URL}/statistics/chart?period=${chartPeriod}`);
                 const data = await response.json();
                 
-                if (!response.ok) throw new Error(data.message || 'Gagal ambil data chart.');
+                if (!response.ok) throw new Error(data.message || 'Failed get chart data.');
                 
                 if (isMounted) {
                     const formattedData = data.map(item => ({
@@ -163,11 +163,11 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
             try {
                 const statsResponse = await fetch(`${API_BASE_URL}/statistics`);
                 const statsData = await statsResponse.json();
-                if (!statsResponse.ok) throw new Error(statsData.message || 'Gagal ambil statistik.');
+                if (!statsResponse.ok) throw new Error(statsData.message || 'failed get statistics.');
                 
                 const transResponse = await fetch(`${API_BASE_URL}/transaksi/riwayat?limit=5`);
                 const transData = await transResponse.json();
-                if (!transResponse.ok) throw new Error(transData.message || 'Gagal ambil transaksi terbaru.');
+                if (!transResponse.ok) throw new Error(transData.message || 'Failed get newest Transactions.');
                 
                 if (isMounted) {
                     setStats(statsData);
@@ -191,7 +191,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
             isMounted = false;
         };
     }, [refreshKey, chartRefreshKey]);
-
+        
     const currentUser = {
         name: 'Admin dashboard',
         accountNumber: '7799021650880',
@@ -212,14 +212,14 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
         return (
             <div className="flex justify-center items-center h-64">
                 <RefreshCw className="w-8 h-8 animate-spin text-blue-800" />
-                <span className="ml-3 text-gray-600">Memuat Dashboard...</span>
+                <span className="ml-3 text-gray-600">Load Dashboard...</span>
             </div>
         );
     }
 
     if (error || !stats) {
         return <div className="p-6 text-red-600 bg-red-50 border border-red-200 rounded-xl">
-            Error: {error || "Gagal memuat data statistik."}
+            Error: {error || "Failed load statistic data."}
         </div>;
     }
 
@@ -279,6 +279,27 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                             </div>
                         ))}
                     </div>
+                </div>
+            </div>
+
+            {/* Actions Section */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+                <h3 className="font-semibold text-gray-800 mb-4">Some Features</h3>
+                <p className="text-sm text-gray-500 mb-4">Choose actions below</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {[
+                        { label: 'Deposit', icon: ArrowDownLeft, bgColor: 'bg-green-100', textColor: 'text-green-600', action: () => onTransactionClick('deposit') },
+                        { label: 'Withdraw', icon: ArrowUpRight, bgColor: 'bg-red-100', textColor: 'text-red-600', action: () => onTransactionClick('withdraw') },
+                        { label: 'History', icon: History, bgColor: 'bg-purple-100', textColor: 'text-purple-600', action: () => setActiveTab('transactions') },
+                        { label: 'Members', icon: Users, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => setActiveTab('members') },
+                    ].map((btn, i) => (
+                        <button key={i} onClick={btn.action} className="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition">
+                            <div className={`w-12 h-12 ${btn.bgColor} rounded-xl flex items-center justify-center mb-3`}>
+                                <btn.icon className={btn.textColor} size={24} />
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">{btn.label}</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -364,37 +385,12 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                 )}
             </div>
 
-            {/* Actions Section */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-                <h3 className="font-semibold text-gray-800 mb-4">What would you like to do today?</h3>
-                <p className="text-sm text-gray-500 mb-4">Choose from our popular actions below</p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {[
-                        { label: 'Deposit', icon: ArrowDownLeft, bgColor: 'bg-green-100', textColor: 'text-green-600', action: () => onTransactionClick('deposit') },
-                        { label: 'Withdraw', icon: ArrowUpRight, bgColor: 'bg-red-100', textColor: 'text-red-600', action: () => onTransactionClick('withdraw') },
-                        { label: 'History', icon: History, bgColor: 'bg-purple-100', textColor: 'text-purple-600', action: () => setActiveTab('transactions') },
-                        { label: 'Members', icon: Users, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => setActiveTab('members') },
-                        { label: 'Top up', icon: Gamepad2, bgColor: 'bg-blue-100', textColor: 'text-grey-600', action: () => setActiveTab('') },
-                        { label: 'Transfer', icon: Send, bgColor: 'bg-blue-100', textColor: 'text-blue-600', action: () => onTransactionClick('transfer') },
-                        { label: 'Buy credit', icon: CardSim, bgColor: 'bg-pink-100', textColor: 'text-pink-600', action: () => setActiveTab('') },
-                        { label: 'Data package', icon:SmartphoneCharging, bgColor: 'bg-yellow-100', textColor: 'text-yellow-600', action: () => setActiveTab('') }
-                    ].map((btn, i) => (
-                        <button key={i} onClick={btn.action} className="flex flex-col items-center p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition">
-                            <div className={`w-12 h-12 ${btn.bgColor} rounded-xl flex items-center justify-center mb-3`}>
-                                <btn.icon className={btn.textColor} size={24} />
-                            </div>
-                            <span className="text-sm font-medium text-gray-700">{btn.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
-
             {/* Recent Transactions */}
             <div className="bg-white rounded-2xl p-6 shadow-sm">
                 <h3 className="font-semibold text-gray-800 mb-4">Recent Transactions</h3>
                 <div className="space-y-3">
                     {recentTransactions.length === 0 ? (
-                        <p className="text-center text-gray-500">Tidak ada transaksi terbaru.</p>
+                        <p className="text-center text-gray-500">There is no newest Transactions.</p>
                     ) : (
                         recentTransactions.map(tx => {
                             const isDeposit = tx.jenis_transaksi === 'DEPOSIT';
@@ -410,7 +406,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                                             }
                                         </div>
                                         <div>
-                                            <p className="font-medium text-gray-800">{tx.nama || 'Anggota Tidak Dikenal'}</p>
+                                            <p className="font-medium text-gray-800">{tx.nama || 'Customer unknown'}</p>
                                             <p className="text-xs text-gray-500">Card Number: {tx.rfid_tag}</p>
                                         </div>
                                     </div>

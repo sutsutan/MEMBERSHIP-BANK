@@ -242,5 +242,38 @@ app.post('/api/transaction', async (req, res) => {
         res.status(500).json({ message: 'Transaksi gagal diproses.', detail: error.message });
     }
 });
+
+// --- ENDPOINT BARU UNTUK VALIDASI RFID TRANSAKSI (DEPOSIT/WITHDRAW) ---
+app.get('/api/user/rfid/:rfid_tag', async (req, res) => {
+    const rfid_tag = req.params.rfid_tag; // Perhatikan: menggunakan rfid_tag (snake_case) di sini
+
+    try {
+        // Hanya ambil data dasar: nama, saldo, rfid_tag
+        const { data, error } = await supabase
+            .from('anggota')
+            .select('nama, saldo, rfid_tag') 
+            .eq('rfid_tag', rfid_tag)
+            .single(); // Gunakan single() karena rfid_tag seharusnya unik
+
+        if (error) {
+            // Error Supabase (misalnya, tidak ditemukan baris)
+            return res.status(404).json({ message: 'User not found for this RFID tag.' });
+        }
+        
+        // Supabase .single() akan mengembalikan objek atau null jika tidak ada
+        // Jika tidak ada data, supabase akan memunculkan error, namun kita tambahkan cek jika perlu
+        if (!data) {
+             return res.status(404).json({ message: 'User not found for this RFID tag.' });
+        }
+
+        // Kirim data dasar (nama, saldo) ke frontend
+        res.status(200).json(data);
+
+    } catch (error) {
+        console.error('Error fetching user data for transaction:', error.message);
+        res.status(500).json({ message: 'Internal server error while fetching user data.' });
+    }
+});
+
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server berjalan di http://localhost:${PORT}`));
