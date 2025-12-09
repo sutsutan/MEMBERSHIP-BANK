@@ -33,7 +33,7 @@ export default function UserList({ members, loading }) {
                     {members.map(member => (
                         <div key={member.rfid_tag} className="bg-white rounded-2xl p-6 shadow-sm">
                             <div className="flex items-center space-x-4 mb-4">
-                                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                                <div className="w-16 h-16 bg-linear-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                                     {member.nama.charAt(0)}
                                 </div>
                                 <div>

@@ -45,10 +45,10 @@ export default function Layout({ children, activeTab, setActiveTab }) {
     <div className="flex h-screen w-screen bg-gray-50 overflow-hidden">
       
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 overflow-hidden shadow-sm flex-shrink-0`}>
+      <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 overflow-hidden shadow-sm shrink-0`}>
         <div className="p-6">
           <div className="flex items-center space-x-3 mb-8">
-            <div className="w-12 h-12 bg-gradient-to-tr from-blue-500 to-blue-800 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-linear-to-tr from-blue-500 to-blue-800 rounded-lg flex items-center justify-center">
               <img src="public/img/logo-metland.png" alt="Bank Logo" className="w-8 h-8 object-contain rounded" />
             </div>
             <h1 className="text-xl font-bold text-gray-800">Metschoo Bank</h1>
@@ -56,7 +56,7 @@ export default function Layout({ children, activeTab, setActiveTab }) {
 
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3 mb-2">
-              <div className="w-12 h-12 bg-gradient-to-tr from-blue-800 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+              <div className="w-12 h-12 bg-linear-to-tr from-blue-800 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
                 {currentUser.name.charAt(0)}
               </div>
               <div>

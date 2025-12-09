@@ -5,10 +5,12 @@ import CheckBalance from './pages/CheckBalance';
 import RegisterMember from './pages/RegisterMember';
 import UserList from './pages/UserList';
 import TransactionModal from './components/TransactionModal'; 
+import Auth from './pages/Auth';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function App() {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
     const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -18,7 +20,6 @@ export default function App() {
     const [transactions, setTransactions] = useState([]);
     const [members, setMembers] = useState([]);
 
-    // Mengambil SEMUA riwayat transaksi
     const fetchTransactions = async () => {
         try {
             setLoading(true);
@@ -34,7 +35,6 @@ export default function App() {
         }
     };
 
-    // Mengambil SEMUA daftar anggota
     const fetchMembers = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/anggota`);
@@ -48,16 +48,25 @@ export default function App() {
     };
 
     useEffect(() => {
-        fetchTransactions();
-        fetchMembers();
-    }, []);
+        if (isLoggedIn) {
+            fetchTransactions();
+            fetchMembers();
+        }
+    }, [isLoggedIn]);
+
+    const handleLoginSuccess = () => {
+        setIsLoggedIn(true);
+    };
+
+    const handleLogout = () => {
+        setIsLoggedIn(false);
+        setActiveTab('dashboard');
+    };
 
     const handleTransactionClick = (type) => {
         setTransactionType(type);
         setShowTransactionModal(true);
     };
-
-    // Di App.jsx (Handler Sukses)
 
     const handleTransactionSuccess = () => {
         fetchTransactions(); 
@@ -70,9 +79,15 @@ export default function App() {
         setActiveTab('members');
     };
 
+    // JIKA BELUM LOGIN, TAMPILKAN AUTH
+    if (!isLoggedIn) {
+        return <Auth onLoginSuccess={handleLoginSuccess} />;
+    }
+
+    // JIKA SUDAH LOGIN, TAMPILKAN DASHBOARD
     return (
         <>
-            <Layout activeTab={activeTab} setActiveTab={setActiveTab}>
+            <Layout activeTab={activeTab} setActiveTab={setActiveTab} onLogout={handleLogout}>
                 {activeTab === 'dashboard' && (
                     <AdminPanel 
                         setActiveTab={setActiveTab}
