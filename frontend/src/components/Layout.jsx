@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Wallet, TrendingUp, History, Users, UserPlus, Menu, X } from 'lucide-react';
+import { Wallet, TrendingUp, History, Users, UserPlus, Menu, X, LogOut } from 'lucide-react';
 
-export default function Layout({ children, activeTab, setActiveTab }) {
+export default function Layout({ children, activeTab, setActiveTab, onLogout }) {
+  // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ TAMBAH onLogout
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ⬇⬇⬇ TAMBAHAN REALTIME CLOCK DI SINI ⬇⬇⬇
@@ -46,7 +47,7 @@ export default function Layout({ children, activeTab, setActiveTab }) {
       
       {/* Sidebar */}
       <div className={`${sidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 overflow-hidden shadow-sm shrink-0`}>
-        <div className="p-6">
+        <div className="p-6 flex flex-col h-full">
           <div className="flex items-center space-x-3 mb-8">
             <div className="w-12 h-12 bg-linear-to-tr from-blue-500 to-blue-800 rounded-lg flex items-center justify-center">
               <img src="public/img/logo-metland.png" alt="Bank Logo" className="w-8 h-8 object-contain rounded" />
@@ -66,7 +67,7 @@ export default function Layout({ children, activeTab, setActiveTab }) {
             </div>
           </div>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1 flex-1">
             <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Main Menu</p>
 
             {[
@@ -87,6 +88,17 @@ export default function Layout({ children, activeTab, setActiveTab }) {
               </button>
             ))}
           </nav>
+
+          {/* ⬇⬇⬇ TOMBOL LOGOUT - TAMBAHKAN INI ⬇⬇⬇ */}
+          <button
+            onClick={onLogout}
+            className="w-full flex items-center space-x-3 p-3 rounded-lg transition bg-red-50 text-red-600 hover:bg-red-100 mt-4"
+          >
+            <LogOut size={20} />
+            <span className="font-medium">Logout</span>
+          </button>
+          {/* ⬆⬆⬆ TOMBOL LOGOUT SAMPAI SINI ⬆⬆⬆ */}
+
         </div>
       </div>
 

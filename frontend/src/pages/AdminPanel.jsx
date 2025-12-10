@@ -264,8 +264,7 @@ export default function AdminPanel({ setActiveTab, onTransactionClick, refreshKe
                     <div className="space-y-4">
                         {[
                             { icon: DollarSign, label: 'Total Member Balance', value: statsDisplay.totalBalance, bgColor: 'bg-blue-100', textColor: 'text-blue-600' },
-                            { icon: History, label: 'Pending Trans.', value: statsDisplay.pendingTransactions, bgColor: 'bg-yellow-100', textColor: 'text-yellow-600' },
-                            { icon: TrendingUp, label: 'Trans. Value', value: statsDisplay.transactionValue, bgColor: 'bg-green-100', textColor: 'text-green-600' },
+                            { icon: TrendingUp, label: 'Total Transaction', value: statsDisplay.transactionValue, bgColor: 'bg-green-100', textColor: 'text-green-600' },
                             { icon: Users, label: 'Active Member', value: statsDisplay.activeMember, bgColor: 'bg-purple-100', textColor: 'text-purple-600' }
                         ].map((stat, i) => (
                             <div key={i} className="flex items-center space-x-3">

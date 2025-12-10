@@ -10,7 +10,11 @@ import Auth from './pages/Auth';
 const API_BASE_URL = 'http://localhost:8080/api';
 
 export default function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    // ⬇⬇⬇ CEK LOCALSTORAGE DULU ⬇⬇⬇
+    const [isLoggedIn, setIsLoggedIn] = useState(() => {
+        return localStorage.getItem('isLoggedIn') === 'true';
+    });
+    
     const [activeTab, setActiveTab] = useState('dashboard');
     const [refreshKey, setRefreshKey] = useState(0);
     const [showTransactionModal, setShowTransactionModal] = useState(false);
@@ -54,12 +58,16 @@ export default function App() {
         }
     }, [isLoggedIn]);
 
+    // ⬇⬇⬇ SIMPAN KE LOCALSTORAGE ⬇⬇⬇
     const handleLoginSuccess = () => {
         setIsLoggedIn(true);
+        localStorage.setItem('isLoggedIn', 'true');
     };
 
+    // ⬇⬇⬇ HAPUS DARI LOCALSTORAGE ⬇⬇⬇
     const handleLogout = () => {
         setIsLoggedIn(false);
+        localStorage.removeItem('isLoggedIn');
         setActiveTab('dashboard');
     };
 
